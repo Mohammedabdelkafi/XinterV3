@@ -11,12 +11,14 @@ namespace XinterV3
         private char? currChar;
         private string digits = "1234567890";
         private string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+        private bool debugMode;
 
-        public Lexer(string text)
+        public Lexer(string text, bool debugMode = false)
         {
             this.src = text;
             this.tokens = new List<Token>();
             this.pos = -1;
+            this.debugMode = debugMode;
             Advance();
             Tokenize();
         }
@@ -61,6 +63,15 @@ namespace XinterV3
                 else
                 {
                     throw new Exception("Unexpected character: " + this.currChar);
+                }
+            }
+
+            if (debugMode)
+            {
+                Console.WriteLine("Tokens:");
+                foreach (var token in tokens)
+                {
+                    Console.WriteLine(token);
                 }
             }
         }
