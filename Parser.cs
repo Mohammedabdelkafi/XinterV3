@@ -9,13 +9,15 @@ namespace XinterV3
         private int idx;
         private Token currTok;
         private bool calcMode;
+        private bool debugMode;
         private Dictionary<string, double> variables;
 
-        public Parser(List<Token> tokens, bool calcMode, Dictionary<string, double> variables)
+        public Parser(List<Token> tokens, bool calcMode, bool debugMode, Dictionary<string, double> variables)
         {
             this.tokens = tokens;
             this.idx = -1;
             this.calcMode = calcMode;
+            this.debugMode = debugMode;
             this.variables = variables;
             Advance();
             Parse();
@@ -60,6 +62,10 @@ namespace XinterV3
             Advance(); // skip EQUALS
             double value = Expr();
             this.variables[varName] = value;
+            if (debugMode)
+            {
+                Console.WriteLine($"Assigned {varName} = {value}");
+            }
         }
 
         private double Expr()
@@ -78,7 +84,7 @@ namespace XinterV3
                     result -= Term();
                 }
             }
-            if (this.calcMode)
+            if (calcMode)
             {
                 Console.WriteLine("Result: " + result);
             }
