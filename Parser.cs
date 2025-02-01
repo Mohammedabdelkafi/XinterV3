@@ -70,20 +70,7 @@ namespace XinterV3
 
         private double Expr()
         {
-            double result = Term();
-            while (this.currTok != null && (this.currTok.Type == "PLUS" || this.currTok.Type == "MINUS"))
-            {
-                string op = this.currTok.Type;
-                Advance();
-                if (op == "PLUS")
-                {
-                    result += Term();
-                }
-                else if (op == "MINUS")
-                {
-                    result -= Term();
-                }
-            }
+            double result = Comparison();
             if (calcMode)
             {
                 Console.WriteLine("Result: " + result);
@@ -91,20 +78,53 @@ namespace XinterV3
             return result;
         }
 
-        private double Term()
+        private double Comparison()
         {
-            double result = Factor();
-            while (this.currTok != null && (this.currTok.Type == "MULTIPLY" || this.currTok.Type == "DIVIDE"))
+            double result = Term();
+            while (this.currTok != null && (this.currTok.Type == "EQ" || this.currTok.Type == "NEQ" || this.currTok.Type == "LT" || this.currTok.Type == "LE" || this.currTok.Type == "GT" || this.currTok.Type == "GE"))
             {
                 string op = this.currTok.Type;
                 Advance();
-                if (op == "MULTIPLY")
+                double rhs = Term();
+                switch (op)
                 {
-                    result *= Factor();
+                    case "EQ":
+                        result = (result == rhs) ? 1.0 : 0.0;
+                        break;
+                    case "NEQ":
+                        result = (result != rhs) ? 1.0 : 0.0;
+                        break;
+                    case "LT":
+                        result = (result < rhs) ? 1.0 : 0.0;
+                        break;
+                    case "LE":
+                        result = (result <= rhs) ? 1.0 : 0.0;
+                        break;
+                    case "GT":
+                        result = (result > rhs) ? 1.0 : 0.0;
+                        break;
+                    case "GE":
+                        result = (result >= rhs) ? 1.0 : 0.0;
+                        break;
                 }
-                else if (op == "DIVIDE")
+            }
+            return result;
+        }
+
+        private double Term()
+        {
+            double result = Factor();
+            while (this.currTok != null && (this.currTok.Type == "PLUS" || this.currTok.Type == "MINUS"))
+            {
+                string op = this.currTok.Type;
+                Advance();
+                if (op == "PLUS")
                 {
-                    result /= Factor();
+                    result += Factor();
+                }
+                else if (op == "MINUS")
+                {
+                    result -= Factor();
                 }
             }
             return result;
@@ -117,6 +137,10 @@ namespace XinterV3
             {
                 case "NUMBER":
                     result = double.Parse(this.currTok.Value);
+                    Advance();
+                    break;
+                case "BOOLEAN":
+                    result = this.currTok.Value == "true" ? 1.0 : 0.0;
                     Advance();
                     break;
                 case "IDENTIFIER":
