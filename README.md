@@ -1,2 +1,2 @@
 # XinterV3
-A New More optimised version of XinterV3 Made in C# with blazingly fast runtime
+A New More optimised version of XinterV2 Made in C# with blazingly fast runtime
