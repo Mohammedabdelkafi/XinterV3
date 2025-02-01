@@ -43,26 +43,21 @@ namespace XinterV3
 
             while (this.currChar != null)
             {
-                if (tokenMap.ContainsKey((char)this.currChar))
-                {
-                    this.tokens.Add(new Token(tokenMap[(char)this.currChar], this.currChar.ToString()));
-                    Advance();
-                }
-                else if (this.currChar == ' ')
+                if (char.IsWhiteSpace((char)this.currChar))
                 {
                     Advance(); // Skip whitespace
                 }
-                else if (this.digits.Contains(this.currChar.ToString()))
+                else if (char.IsDigit((char)this.currChar))
                 {
                     ParseNum();
                 }
-                else if (this.letters.Contains(this.currChar.ToString()))
+                else if (char.IsLetter((char)this.currChar))
                 {
-                    ParseVar();
+                    ParseVarOrBool();
                 }
                 else
                 {
-                    throw new Exception("Unexpected character: " + this.currChar);
+                    ParseOperator(tokenMap);
                 }
             }
 
@@ -79,7 +74,7 @@ namespace XinterV3
         private void ParseNum()
         {
             string numStr = "";
-            while (this.currChar != null && this.digits.Contains(this.currChar.ToString()))
+            while (this.currChar != null && char.IsDigit((char)this.currChar))
             {
                 numStr += this.currChar;
                 Advance();
@@ -87,15 +82,83 @@ namespace XinterV3
             this.tokens.Add(new Token("NUMBER", numStr));
         }
 
-        private void ParseVar()
+        private void ParseVarOrBool()
         {
             string varStr = "";
-            while (this.currChar != null && (this.letters + this.digits).Contains(this.currChar.ToString()))
+            while (this.currChar != null && (char.IsLetterOrDigit((char)this.currChar) || this.currChar == '_'))
             {
                 varStr += this.currChar;
                 Advance();
             }
-            this.tokens.Add(new Token("IDENTIFIER", varStr));
+
+            if (varStr == "true" || varStr == "false")
+            {
+                this.tokens.Add(new Token("BOOLEAN", varStr));
+            }
+            else
+            {
+                this.tokens.Add(new Token("IDENTIFIER", varStr));
+            }
+        }
+
+        private void ParseOperator(Dictionary<char, string> tokenMap)
+        {
+            char curr = (char)this.currChar;
+            Advance();
+            if (this.currChar != null)
+            {
+                string twoCharOp = curr.ToString() + this.currChar.ToString();
+
+                switch (twoCharOp)
+                {
+                    case "==":
+                        this.tokens.Add(new Token("EQ", twoCharOp));
+                        Advance();
+                        return;
+                    case "!=":
+                        this.tokens.Add(new Token("NEQ", twoCharOp));
+                        Advance();
+                        return;
+                    case "<=":
+                        this.tokens.Add(new Token("LE", twoCharOp));
+                        Advance();
+                        return;
+                    case ">=":
+                        this.tokens.Add(new Token("GE", twoCharOp));
+                        Advance();
+                        return;
+                    case "&&":
+                        this.tokens.Add(new Token("AND", twoCharOp));
+                        Advance();
+                        return;
+                    case "||":
+                        this.tokens.Add(new Token("OR", twoCharOp));
+                        Advance();
+                        return;
+                }
+            }
+
+            if (tokenMap.ContainsKey(curr))
+            {
+                this.tokens.Add(new Token(tokenMap[curr], curr.ToString()));
+            }
+            else
+            {
+                switch (curr)
+                {
+                    case '<':
+                        this.tokens.Add(new Token("LT", curr.ToString()));
+                        break;
+                    case '>':
+                        this.tokens.Add(new Token("GT", curr.ToString()));
+                        break;
+                    case '!':
+                        this.tokens.Add(new Token("NOT", curr.ToString()));
+                        break;
+                    default:
+                        throw new Exception("Unexpected character: " + curr);
+                }
+            }
         }
 
         public List<Token> GetTokens()
